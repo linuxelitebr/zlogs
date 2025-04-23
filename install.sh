@@ -11,6 +11,56 @@ ALGO="lzo"
 
 REPO_RAW_BASE="https://raw.githubusercontent.com/linuxelitebr/zlogs/main"
 
+# Function to handle uninstallation
+uninstall() {
+  echo "[+] Starting uninstallation of zram log system..."
+  
+  # Stop and disable systemd services
+  echo "[+] Stopping and disabling systemd services..."
+  sudo systemctl stop zram-clean.timer zram-clean.service $DEFAULT_ZRAM_DEV-setup.service 2>/dev/null || true
+  sudo systemctl disable zram-clean.timer zram-clean.service zram-clean.path $DEFAULT_ZRAM_DEV-setup.service 2>/dev/null || true
+  
+  # Remove systemd unit files
+  echo "[+] Removing systemd unit files..."
+  sudo rm -f "$SYSTEMD_PATH/zram-clean.service" "$SYSTEMD_PATH/zram-clean.timer" "$SYSTEMD_PATH/zram-clean.path" "$SYSTEMD_PATH/$DEFAULT_ZRAM_DEV-setup.service" 2>/dev/null || true
+  sudo systemctl daemon-reload
+
+  # Unmount zram device if mounted
+  echo "[+] Unmounting zram device..."
+  if mount | grep -q "$DEFAULT_LOG_DIR"; then
+    sudo umount -f "$DEFAULT_LOG_DIR" 2>/dev/null || true
+  fi
+  
+  # Reset zram device
+  if [ -e "/sys/block/$DEFAULT_ZRAM_DEV/reset" ]; then
+    echo "[+] Resetting zram device..."
+    echo 1 | sudo tee "/sys/block/$DEFAULT_ZRAM_DEV/reset" >/dev/null 2>&1 || true
+  fi
+  
+  # Remove scripts
+  echo "[+] Removing scripts..."
+  sudo rm -f "$INSTALL_PATH/clean-zram-logs.sh" 2>/dev/null || true
+  
+  # Remove rsyslog config
+  echo "[+] Removing rsyslog configuration..."
+  sudo rm -f "/etc/rsyslog.d/30-zram-clean.conf" 2>/dev/null || true
+  sudo systemctl restart rsyslog 2>/dev/null || true
+  
+  # Optionally remove log directory
+  echo -n "[?] Do you want to remove the log directory ($DEFAULT_LOG_DIR)? [y/N]: "
+  read -r REMOVE_LOGS
+  if [[ "$REMOVE_LOGS" =~ ^[Yy]$ ]]; then
+    echo "[+] Removing log directory..."
+    sudo rm -rf "$DEFAULT_LOG_DIR" 2>/dev/null || true
+  else
+    echo "[+] Keeping log directory."
+  fi
+  
+  echo -e "\n✅ Uninstallation complete!"
+  echo "Zram log system has been removed from your system."
+  exit 0
+}
+
 function download_file() {
   local src="$1"
   local dest="$2"
@@ -22,6 +72,11 @@ function download_file() {
   fi
   echo "[✔] $src installed"
 }
+
+# Process command line options
+if [ "$1" = "-s" ] && [ "$2" = "uninstall" ]; then
+  uninstall
+fi
 
 # 1. Prompt for Zram Size
 read -p "Enter zram size in M (e.g., 512, 1024, default is 512): " ZRAM_SIZE

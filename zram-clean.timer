@@ -3,11 +3,9 @@ Description=Run zram-clean service periodically (backup to Path detection)
 Documentation=https://github.com/linuxelitebr/zlogs
 
 [Timer]
-# Path backup solution, but less frequent
-OnBootSec=2min
-OnUnitActiveSec=1h
+OnBootSec=5min
+OnUnitActiveSec=30min
 AccuracySec=1min
-#RandomizedDelaySec=5min
 Unit=zram-clean.service
 
 [Install]

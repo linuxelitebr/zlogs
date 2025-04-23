@@ -40,7 +40,9 @@ The table below compares storage requirements for typical log files when stored 
 To install ZLogs, simply run the following command. This will download the installation script from GitHub and execute it:
 
 ```shell
-curl -sSL https://raw.githubusercontent.com/linuxelitebr/zlogs/main/install.sh | bash
+curl -sSL -o install.sh https://raw.githubusercontent.com/linuxelitebr/zlogs/main/install.sh
+chmod +x install.sh
+./install.sh
 ```
 
 ### Installation Steps:
@@ -67,7 +69,7 @@ It is recommended to allocate at least **512MB** of zram for log storage. If not
 To uninstall ZLogs, run the following command:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/linuxelitebr/zlogs/main/install.sh | bash -s uninstall
+./install.sh -s uninstall
 ```
 
 This will stop the systemd services, disable them, and remove all installed files (cleanup script and systemd units).
@@ -96,6 +98,14 @@ You can easily customize the installation:
 - **Service Timing**: You can modify the systemd timer settings to adjust the frequency of the log cleanup process by editing the zram-clean.timer file.
 
 If you customize it too much, don't forget to verify your changes:
+
+```bash
+systemctl daemon-reload
+```
+
+```bash
+systemctl reset-failed zram-clean.service
+```
 
 ```bash
 systemd-analyze verify /etc/systemd/system/zram-clean.service
