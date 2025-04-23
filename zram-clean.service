@@ -1,0 +1,27 @@
+[Unit]
+Description=Clean zram log files when necessary
+Documentation=https://github.com/linuxelitebr/zlogs
+#After=local-fs.target
+After=zram1-setup.service
+Requires=zram1-setup.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 10
+ExecStart=/usr/local/sbin/clean-zram-logs.sh
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=zram-clean
+User=root
+Group=root
+# Adding longer timeout to allow proper cleanup
+TimeoutStartSec=60s
+# Reset start limits
+StartLimitInterval=5min
+StartLimitBurst=10
+StartLimitIntervalSec=60
+RemainAfterExit=no
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

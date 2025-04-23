@@ -1,0 +1,16 @@
+[Unit]
+Description=Monitor zram log directory for changes
+Documentation=https://github.com/linuxelitebr/zlogs
+After=local-fs.target
+
+[Path]
+# Monitor .log files
+PathExists=/var/log/debug-zram
+PathExistsGlob=/var/log/debug-zram/*.log
+PathChanged=/var/log/debug-zram/
+# Monitor directory changes
+DirectoryNotEmpty=/var/log/debug-zram
+Unit=zram-clean.service
+
+[Install]
+WantedBy=multi-user.target
