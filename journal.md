@@ -1,7 +1,8 @@
-# Experiment
+# Testing Section – Log Redirection
 
-Redirect journal logs to zram. In practice this is useless, but it's an easy way to test whether ZLog is working.
+As part of our technical evaluation, we propose redirecting the `journal` logs to a ZRAM device. Although this configuration does not offer direct practical benefits in terms of performance or durability (serving only for demonstration purposes) it does constitute a simple and controlled method for verifying the functionality and integrity of the ZLog in our environment.
 
+👉 This is just a test. You don't need to do this in your environment for ZLog to work.
 
 ## Creating directories
 
@@ -10,7 +11,6 @@ sudo mkdir -p -m2775 /var/log/debug-zram/journal
 sudo chown ":systemd-journal" /var/log/debug-zram/journal
 killall -USR1 systemd-journald
 ```
-
 
 ## Setting up journald
 
@@ -27,7 +27,6 @@ SystemMaxFileSize=2M
 SystemMaxFiles=100
 ```
 
-
 ## Then edit (or create) a drop-in override to define the new path:
 
 ```bash
@@ -41,7 +40,6 @@ SystemKeepFree=25M
 SystemMaxUse=475M
 ```
 
-
 ## Bindmount
 
 ```bash
@@ -52,7 +50,6 @@ mount | grep zram
  /dev/zram1 on /var/log/journal type ext4 (rw,relatime,seclabel)
 ```
 
-
 ## SELinux
 
 ```bash
@@ -61,7 +58,6 @@ mount | grep zram
 setsebool -P logging_syslogd_list_non_security_dirs 1
 service auditd rotate
 ```
-
 
 ## Restarting journald safely
 
